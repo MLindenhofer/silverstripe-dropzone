@@ -9,6 +9,7 @@ use SilverStripe\Control\HTTP;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
+use SilverStripe\Core\Validation\ValidationResult;
 use SilverStripe\Forms\FileHandleField;
 use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\Validator;
@@ -220,7 +221,7 @@ class DropzoneField extends FormField implements FileHandleField
      * @param Validator $validator
      * @return bool
      */
-    public function validate($validator)
+    public function validate($validator): ValidationResult
     {
         $maxFiles = $this->getAllowedMaxFileNumber();
         $count = count($this->getItems());
