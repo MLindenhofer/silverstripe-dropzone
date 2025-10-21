@@ -221,7 +221,7 @@ class DropzoneField extends FormField implements FileHandleField
      * @param Validator $validator
      * @return bool
      */
-    public function validate($validator): ValidationResult
+    public function validate(): ValidationResult
     {
         $maxFiles = $this->getAllowedMaxFileNumber();
         $count = count($this->getItems());
