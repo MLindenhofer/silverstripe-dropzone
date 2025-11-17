@@ -9,6 +9,7 @@ use SilverStripe\Control\HTTP;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\HTTPResponse_Exception;
+use SilverStripe\Core\Validation\ValidationResult;
 use SilverStripe\Forms\FileHandleField;
 use SilverStripe\Forms\FormField;
 use SilverStripe\Forms\Validator;
@@ -220,16 +221,20 @@ class DropzoneField extends FormField implements FileHandleField
      * @param Validator $validator
      * @return bool
      */
-    public function validate($validator)
+    public function validate(): ValidationResult
     {
+        $result = ValidationResult::create();
+
         $maxFiles = $this->getAllowedMaxFileNumber();
         $count = count($this->getItems());
 
+        // If no limit or within limit, validation passes
         if ($maxFiles < 1 || $count <= $maxFiles) {
-            return true;
+            return $result;
         }
 
-        $validator->validationError(
+        // Add validation error
+        $result->addFieldError(
             $this->getName(),
             _t(
                 UploadField::class . '.ErrorMaxFilesReached',
@@ -238,11 +243,20 @@ class DropzoneField extends FormField implements FileHandleField
             )
         );
 
-        return false;
+        return $result;
     }
 
     public function getAttributes()
     {
+        static $inCall = false;
+
+        // Prevent infinite recursion
+        if ($inCall) {
+            return parent::getAttributes();
+        }
+
+        $inCall = true;
+
         $attributes = [
             'class' => $this->extraClass(),
             'type' => 'file',
@@ -255,6 +269,8 @@ class DropzoneField extends FormField implements FileHandleField
         $attributes = array_merge($attributes, $this->attributes);
 
         $this->extend('updateAttributes', $attributes);
+
+        $inCall = false;
 
         return $attributes;
     }
