@@ -223,14 +223,18 @@ class DropzoneField extends FormField implements FileHandleField
      */
     public function validate(): ValidationResult
     {
+        $result = ValidationResult::create();
+
         $maxFiles = $this->getAllowedMaxFileNumber();
         $count = count($this->getItems());
 
+        // If no limit or within limit, validation passes
         if ($maxFiles < 1 || $count <= $maxFiles) {
-            return true;
+            return $result;
         }
 
-        $validator->validationError(
+        // Add validation error
+        $result->addFieldError(
             $this->getName(),
             _t(
                 UploadField::class . '.ErrorMaxFilesReached',
@@ -239,11 +243,20 @@ class DropzoneField extends FormField implements FileHandleField
             )
         );
 
-        return false;
+        return $result;
     }
 
     public function getAttributes()
     {
+        static $inCall = false;
+
+        // Prevent infinite recursion
+        if ($inCall) {
+            return parent::getAttributes();
+        }
+
+        $inCall = true;
+
         $attributes = [
             'class' => $this->extraClass(),
             'type' => 'file',
@@ -256,6 +269,8 @@ class DropzoneField extends FormField implements FileHandleField
         $attributes = array_merge($attributes, $this->attributes);
 
         $this->extend('updateAttributes', $attributes);
+
+        $inCall = false;
 
         return $attributes;
     }
